@@ -20,6 +20,13 @@ struct ArtistMusicNewApp: App {
                 .frame(minWidth: 800, minHeight: 600)
         }
         #if os(macOS)
+        MenuBarExtra("Now Playing", systemImage: "music.note") {
+            NowPlayingView()
+                .environmentObject(store)
+                .environmentObject(player)
+                .frame(width: 300, height: 450)
+        }
+        .menuBarExtraStyle(.window)
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified)
         .commands {
