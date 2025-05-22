@@ -22,7 +22,46 @@ class EnhancedArtistStore: ObservableObject {
         songsFileURL = documentsDirectory.appendingPathComponent("songs.json")
         playlistsFileURL = documentsDirectory.appendingPathComponent("playlists.json")
         collaboratorsFileURL = documentsDirectory.appendingPathComponent("collaborators.json")
-        loadData()
+
+        // Load data off the main actor so app launch feels snappier
+        Task.detached { [artistsFileURL, songsFileURL, playlistsFileURL, collaboratorsFileURL] in
+            let decoder = JSONDecoder()
+            var loadedArtists: [Artist] = []
+            var loadedSongs: [Song] = []
+            var loadedPlaylists: [Playlist] = []
+            var loadedCollaborators: [Collaborator] = []
+
+            if FileManager.default.fileExists(atPath: artistsFileURL.path),
+               let data = try? Data(contentsOf: artistsFileURL),
+               let decoded = try? decoder.decode([Artist].self, from: data) {
+                loadedArtists = decoded
+            }
+
+            if FileManager.default.fileExists(atPath: songsFileURL.path),
+               let data = try? Data(contentsOf: songsFileURL),
+               let decoded = try? decoder.decode([Song].self, from: data) {
+                loadedSongs = decoded
+            }
+
+            if FileManager.default.fileExists(atPath: playlistsFileURL.path),
+               let data = try? Data(contentsOf: playlistsFileURL),
+               let decoded = try? decoder.decode([Playlist].self, from: data) {
+                loadedPlaylists = decoded
+            }
+
+            if FileManager.default.fileExists(atPath: collaboratorsFileURL.path),
+               let data = try? Data(contentsOf: collaboratorsFileURL),
+               let decoded = try? decoder.decode([Collaborator].self, from: data) {
+                loadedCollaborators = decoded
+            }
+
+            await MainActor.run {
+                self.artists = loadedArtists
+                self.allSongs = loadedSongs
+                self.allPlaylists = loadedPlaylists
+                self.collaborators = loadedCollaborators
+            }
+        }
     }
     
     // MARK: - Data Persistence

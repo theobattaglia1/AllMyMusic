@@ -134,8 +134,8 @@ struct MainView: View {
             
             NowPlayingBar()
                 .ignoresSafeArea(.keyboard, edges: .bottom)
-        }
 #if os(macOS)
+        }
         .background(
             KeyboardEventHandlingView(onSpace: {
                 guard !isTextFieldFocused() else { return }
@@ -146,6 +146,29 @@ struct MainView: View {
                 }
             })
         )
+        .background(Color.appBackground)
+        .toolbar {
+            ToolbarItemGroup {
+                Button { player.playPrevious() } label: {
+                    Image(systemName: "backward.fill")
+                }
+                Button {
+                    if player.isPlaying {
+                        player.pause()
+                    } else if let song = player.currentSong {
+                        player.playSong(song)
+                    }
+                } label: {
+                    Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
+                }
+                Button { player.skipForward() } label: {
+                    Image(systemName: "forward.fill")
+                }
+            }
+        }
+#else
+        }
+        .background(Color.appBackground)
 #endif
     }
     
